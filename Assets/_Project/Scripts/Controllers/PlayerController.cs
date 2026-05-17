@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 [RequireComponent(typeof(Rigidbody2D))]
@@ -58,6 +59,20 @@ public class PlayerController : MonoBehaviour
         if (Mathf.Abs(moveInput.x) > 0.1f)
         {
             rb.AddTorque(-moveInput.x * steerTorque);
+        }
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Core"))
+        {
+            TetherManager tetherManager = FindFirstObjectByType<TetherManager>();
+            if(tetherManager!=null && !tetherManager.IsConnected())
+            {
+                tetherManager.Reconnect();
+                GameManager.Instance.EndRecovery();
+            }
+
         }
     }
 

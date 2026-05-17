@@ -15,11 +15,13 @@ public class TetherManager : MonoBehaviour
     [SerializeField] private float segmentMass = 0.1f;     
     [SerializeField] private float segmentDamping = 2f;    
     [SerializeField] private float maxTension = 1500f;     // Force threshold for snapping
+    [SerializeField] private float wallTensionMultiplier = 0.5f; // Lower the value easier to snap
 
     private List<Rigidbody2D> segments = new List<Rigidbody2D>();
     private List<DistanceJoint2D> joints = new List<DistanceJoint2D>();
     private LineRenderer lineRenderer;
     private bool isConnected = false;
+    private bool isTouchingWall = false;
 
     private void Awake()
     {
@@ -33,12 +35,20 @@ public class TetherManager : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (!isConnected) return;
 
+        if (!isConnected || joints == null || joints.Count == 0) return;
+
+        float currentMaxTension = isTouchingWall ? (maxTension * wallTensionMultiplier) : maxTension;
+
+        if (joints[0] != null)
+        {
+            float force = joints[0].reactionForce.magnitude;
+            Debug.Log($"Force: {force:F2} | Limit: {currentMaxTension:F2} | Wall: {isTouchingWall}");
+        }
         // Check tension on EVERY joint in the chain
         foreach (var joint in joints)
         {
-            if (joint.reactionForce.magnitude > maxTension)
+            if (joint != null && joint.reactionForce.magnitude > currentMaxTension)
             {
                 SnapTether();
                 break;
@@ -91,9 +101,15 @@ public class TetherManager : MonoBehaviour
             rb.gravityScale = 0;
             rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
 
+            // Tether segment 
+            TetherSegment segScript = segmentObject.AddComponent<TetherSegment>();
+            segScript.Initialize(this);
+
             // Collider for segments
             CircleCollider2D circleCollider = segmentObject.AddComponent<CircleCollider2D>();
             circleCollider.radius = .1f;
+
+            
 
             // connection
             DistanceJoint2D joint = segmentObject.AddComponent<DistanceJoint2D>();
@@ -121,6 +137,9 @@ public class TetherManager : MonoBehaviour
         Debug.Log("CHAIN SNAPPED!");
         isConnected = false;
         DestroyChain();
+
+        if (GameManager.Instance != null)
+            GameManager.Instance.StartRecovery();
     }
     private void DestroyChain()
     {
@@ -136,5 +155,12 @@ public class TetherManager : MonoBehaviour
     {
         CreateChain();
     }
-
+    public bool IsConnected()
+    {
+        return isConnected;
+    }
+    public void SetWallContact(bool contact)
+    {
+        isTouchingWall = contact;
+    }
 }
