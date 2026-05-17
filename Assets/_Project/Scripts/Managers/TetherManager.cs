@@ -92,6 +92,8 @@ public class TetherManager : MonoBehaviour
         {
             // SegmentObject
             GameObject segmentObject = new GameObject($"RopeSegment_{i}");
+
+            segmentObject.layer = LayerMask.NameToLayer("Rope");
             segmentObject.transform.position = playerRb.position + (direction * spawnSpacing * (i + 1));
 
             // Physics Components

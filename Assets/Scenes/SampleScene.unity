@@ -629,7 +629,7 @@ GameObject:
   - component: {fileID: 879600239}
   - component: {fileID: 879600238}
   - component: {fileID: 879600237}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -1215,7 +1215,7 @@ GameObject:
   - component: {fileID: 1602023987}
   - component: {fileID: 1602023986}
   - component: {fileID: 1602023985}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Core
   m_TagString: Core
   m_Icon: {fileID: 0}
@@ -1531,7 +1531,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1770601567}
   - component: {fileID: 1770601568}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Triangle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
