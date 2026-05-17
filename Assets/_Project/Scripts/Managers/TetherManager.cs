@@ -11,6 +11,7 @@ public class TetherManager : MonoBehaviour
 
     [Header("Chain Settings")]
     [SerializeField] private int segmentCount = 8;        // Number of links in the chain
+    [SerializeField] private float targetRopeLength = 6f; 
     [SerializeField] private float segmentMass = 0.1f;     
     [SerializeField] private float segmentDamping = 2f;    
     [SerializeField] private float maxTension = 1500f;     // Force threshold for snapping
@@ -69,9 +70,11 @@ public class TetherManager : MonoBehaviour
     {
         DestroyChain();
 
-        float totalDistance = Vector2.Distance(playerRb.position, coreRb.position);
-        float segmentLength = totalDistance / segmentCount;
+        float segmentLength = targetRopeLength / segmentCount;
         Vector2 direction = (coreRb.position - playerRb.position).normalized;
+
+        float currentActualDistance = Vector2.Distance(playerRb.position, coreRb.position);
+        float spawnSpacing = currentActualDistance / segmentCount;
 
         Rigidbody2D previousBody = playerRb;
 
@@ -79,7 +82,7 @@ public class TetherManager : MonoBehaviour
         {
             // SegmentObject
             GameObject segmentObject = new GameObject($"RopeSegment_{i}");
-            segmentObject.transform.position = playerRb.position + (direction * segmentLength * (i + 1));
+            segmentObject.transform.position = playerRb.position + (direction * spawnSpacing * (i + 1));
 
             // Physics Components
             Rigidbody2D rb = segmentObject.AddComponent<Rigidbody2D>();
