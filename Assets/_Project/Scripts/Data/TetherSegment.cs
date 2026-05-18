@@ -9,11 +9,17 @@ public class TetherSegment : MonoBehaviour
         manager = mgr;
     }
 
-    private void OnCollisionStay2D(Collision2D collision)
+    private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Wall"))
         {
             manager.SetWallContact(true);
+        }
+
+        EnemyBase enemy = collision.gameObject.GetComponent<EnemyBase>();
+        if (enemy != null)
+        {
+            enemy.AddBurningContact();
         }
     }
 
@@ -22,6 +28,12 @@ public class TetherSegment : MonoBehaviour
         if (collision.gameObject.CompareTag("Wall"))
         {
             manager.SetWallContact(false);
+        }
+
+        EnemyBase enemy = collision.gameObject.GetComponent<EnemyBase>();
+        if (enemy != null)
+        {
+            enemy.RemoveBurningContact();
         }
     }
 }
