@@ -12,7 +12,7 @@ public abstract class EnemyBase : MonoBehaviour
     protected CoreController core;
 
     private float currentBurnTime = 0f;
-    private bool isCurrentlyBurning = false;
+    private int burningSegmentsCount = 0;
 
     protected virtual void Awake()
     {
@@ -36,7 +36,7 @@ public abstract class EnemyBase : MonoBehaviour
 
     private void HandleBurning()
     {
-        if (isCurrentlyBurning)
+        if (burningSegmentsCount > 0)
         {
             currentBurnTime += Time.deltaTime;
 
@@ -57,15 +57,21 @@ public abstract class EnemyBase : MonoBehaviour
     {
         rb.gravityScale = 0;
         rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
-        // We will set mass and damping in the specific enemy types
+
     }
     protected virtual void Die()
     {
         Debug.Log($"{gameObject.name} burned to a crisp!");
         Destroy(gameObject);
     }
-    public void SetBurning(bool burning)
+    public void AddBurningContact()
     {
-        isCurrentlyBurning = burning;
+        burningSegmentsCount++;
+    }
+
+    public void RemoveBurningContact()
+    {
+        burningSegmentsCount--;
+        if (burningSegmentsCount < 0) burningSegmentsCount = 0;
     }
 }
