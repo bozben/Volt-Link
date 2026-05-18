@@ -43,7 +43,7 @@ public class TetherManager : MonoBehaviour
         if (joints[0] != null)
         {
             float force = joints[0].reactionForce.magnitude;
-            Debug.Log($"Force: {force:F2} | Limit: {currentMaxTension:F2} | Wall: {isTouchingWall}");
+            // Debug.Log($"Force: {force:F2} | Limit: {currentMaxTension:F2} | Wall: {isTouchingWall}");
         }
         // Check tension on EVERY joint in the chain
         foreach (var joint in joints)
