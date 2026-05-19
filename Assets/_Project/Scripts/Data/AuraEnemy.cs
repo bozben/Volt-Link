@@ -23,9 +23,32 @@ public class AuraEnemy : EnemyBase
     private void FixedUpdate()
     {
         if (core == null) return;
+        Patrol();
+    }
 
-        Vector2 direction = ((Vector2)core.transform.position - rb.position).normalized;
-        rb.AddForce(direction * data.movementSpeed * 2f); 
+    private void Patrol()
+    {
+        float distToCore = Vector2.Distance(rb.position, core.transform.position);
+
+        if (distToCore <= alertRange)
+        {
+            Vector2 direction = ((Vector2)core.transform.position - rb.position).normalized;
+            rb.AddForce(direction * data.movementSpeed * 2f);
+        }
+        else
+        {
+            float distToHome = Vector2.Distance(rb.position, initialPosition);
+
+            if (distToHome > 0.2f)
+            {
+                Vector2 returnDir = (initialPosition - (Vector2)transform.position).normalized;
+                rb.AddForce(returnDir * data.movementSpeed * 2f);
+            }
+            else
+            {
+                rb.linearVelocity = Vector2.zero;
+            }
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D other)

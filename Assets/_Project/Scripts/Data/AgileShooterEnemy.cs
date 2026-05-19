@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class AgileShooterEnemy : EnemyBase
 {
-    private enum State { CHASE, SEARCHING, COMBAT, PANIC, TIRED, RESET }
+    private enum State { IDLE,CHASE, SEARCHING, COMBAT, PANIC, TIRED, RESET }
     [Header("AI State")]
-    [SerializeField] private State currentState = State.CHASE;
+    [SerializeField] private State currentState = State.IDLE;
 
     [Header("Movement Settings")]
     [SerializeField] private float acceleration = 5f;
@@ -47,7 +47,7 @@ public class AgileShooterEnemy : EnemyBase
         if (core == null || playerRb == null) return;
 
         UpdateState();
-        ExecuteStateBehaviour();
+        ExecuteStateBehavior();
     }
 
     private void UpdateState()
@@ -67,13 +67,18 @@ public class AgileShooterEnemy : EnemyBase
         if(currentState == State.PANIC && distToPlayer > calmThreshold)
         {
             TransitionToState(State.CHASE);
+            return;
         }
 
-        if(currentState == State.CHASE || currentState == State.SEARCHING || currentState == State.COMBAT)
+        if(currentState == State.CHASE || currentState == State.SEARCHING || currentState == State.COMBAT || currentState == State.IDLE)
         {
-            if (distToCore <= combatRange)
+            if (distToCore > alertRange)
             {
-                if (shooter.HasLineOfSight())
+                currentState = State.IDLE;
+            }
+            else if (distToCore <= combatRange)
+            {
+                if (shooter != null && shooter.HasLineOfSight())
                     currentState = State.COMBAT;
                 else
                     currentState = State.SEARCHING;
@@ -86,12 +91,22 @@ public class AgileShooterEnemy : EnemyBase
     }
 
 
-    private void ExecuteStateBehaviour()
+    private void ExecuteStateBehavior()
     {
         Vector2 finalForce = Vector2.zero;
 
         switch (currentState)
         {
+            case State.IDLE:
+                float distToHome = Vector2.Distance(rb.position, initialPosition);
+                if (distToHome > 0.2f)
+                {
+                    Vector2 returnDir = (initialPosition - (Vector2)transform.position).normalized;
+                    finalForce = returnDir * data.movementSpeed * 2f;
+                    RotateTowards(returnDir);
+                }
+                else { rb.linearVelocity = Vector2.zero; }
+                break;
             case State.CHASE:
                 Vector2 chaseDir = ((Vector2)core.transform.position-rb.position).normalized;
                 finalForce = chaseDir * data.movementSpeed * acceleration;
@@ -159,6 +174,23 @@ public class AgileShooterEnemy : EnemyBase
         panicCount = 0;
         currentState = State.CHASE;
 
+    }
+
+    private void ReturnHome()
+    {
+        float distToHome = Vector2.Distance(rb.position, initialPosition);
+
+        if (distToHome > 0.2f)
+        {
+            Vector2 returnDir = (initialPosition - (Vector2)transform.position).normalized;
+            rb.AddForce(returnDir * data.movementSpeed * 2f);
+
+            RotateTowards(returnDir);
+        }
+        else
+        {
+            rb.linearVelocity = Vector2.zero;
+        }
     }
     private void RotateTowards(Vector2 direction)
     {

@@ -7,6 +7,10 @@ public abstract class EnemyBase : MonoBehaviour
     [Header("Enemy Settings")]
     [SerializeField] protected EnemyData data;
 
+    [Header("Alert Settings")]
+    [SerializeField] protected float alertRange = 10f;
+    protected Vector2 initialPosition;
+
     protected Rigidbody2D rb;
     protected SpriteRenderer sr;
     protected CoreController core;
@@ -20,7 +24,8 @@ public abstract class EnemyBase : MonoBehaviour
         sr = GetComponent<SpriteRenderer>();
         core = FindFirstObjectByType<CoreController>();
 
-        // Apply the color from the ScriptableObject
+        initialPosition = transform.position;
+
         if (data != null)
         {
             sr.color = data.tierColor;
