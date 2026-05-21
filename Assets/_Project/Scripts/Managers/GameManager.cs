@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -9,14 +10,26 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float recoveryTime = 5f;
     [SerializeField] private TextMeshProUGUI timerText;
 
+    [Header("UI Panels")]
+    [SerializeField] private GameObject victoryPanel;
+    [SerializeField] private GameObject gameOverPanel;
+
     private float currentTimer;
     private bool isRecovering = false;
+
+    private HUDManager hud;
 
     private void Awake()
     {
         //singleton
         Instance = this;
-        if (timerText != null) timerText.gameObject.SetActive(false);
+
+        hud = FindFirstObjectByType<HUDManager>();
+
+        if (victoryPanel != null) victoryPanel.SetActive(false);
+        if (gameOverPanel != null) gameOverPanel.SetActive(false);
+
+        
     }
     private void Update()
     {
@@ -24,13 +37,12 @@ public class GameManager : MonoBehaviour
 
         currentTimer -= Time.deltaTime;
 
-        if (timerText != null)
-            timerText.text = $"GO BACK TO THE CORE!\n{currentTimer:F1}s";
-
-        if (currentTimer <= 0)
+        if (hud != null)
         {
-            GameOver();
+            string timerStr = $"GO BACK TO THE CORE!\n{currentTimer:F1}s";
+            hud.UpdateTimer(timerStr);
         }
+        if (currentTimer <= 0) TriggerGameOver();
     }
 
 
@@ -38,19 +50,54 @@ public class GameManager : MonoBehaviour
     {
         isRecovering = true;
         currentTimer = recoveryTime;
-        if (timerText != null) timerText.gameObject.SetActive(true);
     }
 
     public void EndRecovery()
     {
         isRecovering = false;
-        if (timerText != null) timerText.gameObject.SetActive(false);
+        if (hud != null)
+        {
+            hud.HideTimer();
+        }
     }
 
-    private void GameOver()
+    public void TriggerVictory()
     {
-        Debug.Log("GAME OVER: Out of power!");
-        //TODO: UI screen
-        Time.timeScale = 0; // Freeze game
+        Debug.Log("Game State: Victory");
+        Time.timeScale = 0;
+        if (victoryPanel != null) victoryPanel.SetActive(true);
+    }
+
+    public void TriggerGameOver()
+    {
+        Debug.Log("Game State: Game Over");
+        Time.timeScale = 0;
+        if (gameOverPanel != null) gameOverPanel.SetActive(true);
+    }
+
+    public void RestartGame()
+    {
+        Time.timeScale = 1;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    public void ReturnToMainMenu()
+    {
+        Time.timeScale = 1;
+        SceneManager.LoadScene(0);
+    }
+
+    public void LoadNextLevel()
+    {
+        Time.timeScale = 1;
+        int nextSceneIndex = SceneManager.GetActiveScene().buildIndex + 1;
+        if (nextSceneIndex < SceneManager.sceneCountInBuildSettings)
+        {
+            SceneManager.LoadScene(nextSceneIndex);
+        }
+        else
+        {
+            Debug.Log("All levels done");
+        }
     }
 }
