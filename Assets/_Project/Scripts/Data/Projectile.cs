@@ -6,6 +6,7 @@ public class Projectile : MonoBehaviour
     [SerializeField] private float speed = 10f;
     [SerializeField] private float knockbackForce = 5f;
     [SerializeField] private float lifeTime = 3f;
+    [SerializeField] private float damage = 10f;
 
     private Rigidbody2D rb;
 
@@ -25,6 +26,12 @@ public class Projectile : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Core"))
         {
+            CoreHealth coreHealth = collision.gameObject.GetComponent<CoreHealth>();
+            if (coreHealth != null)
+            {
+                coreHealth.TakeDamage(damage);
+            }
+
             Rigidbody2D coreRb = collision.gameObject.GetComponent<Rigidbody2D>();
             if (coreRb != null)
             {

@@ -101,9 +101,11 @@ public class KamikazeEnemy : EnemyBase
     private void Explode()
     {
         Debug.Log($"Kamikaze exploded! Dealt {explosionDamage} damage to core.");
-
-        // TODO: implement the Core's HP system in the GameManager/CoreController .
-        // For now, we trigger the logic here.
+        CoreHealth coreHealth = core.GetComponent<CoreHealth>();
+        if (coreHealth != null)
+        {
+            coreHealth.TakeDamage(explosionDamage);
+        }
 
         Destroy(gameObject);
     }
