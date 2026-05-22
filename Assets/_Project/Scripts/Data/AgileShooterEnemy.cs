@@ -176,22 +176,6 @@ public class AgileShooterEnemy : EnemyBase
 
     }
 
-    private void ReturnHome()
-    {
-        float distToHome = Vector2.Distance(rb.position, initialPosition);
-
-        if (distToHome > 0.2f)
-        {
-            Vector2 returnDir = (initialPosition - (Vector2)transform.position).normalized;
-            rb.AddForce(returnDir * data.movementSpeed * 2f);
-
-            RotateTowards(returnDir);
-        }
-        else
-        {
-            rb.linearVelocity = Vector2.zero;
-        }
-    }
     private void RotateTowards(Vector2 direction)
     {
         float angle = MathF.Atan2(direction.x,direction.y) * Mathf.Rad2Deg - 90f;

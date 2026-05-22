@@ -21,7 +21,8 @@ public class TetherManager : MonoBehaviour
     private List<DistanceJoint2D> joints = new List<DistanceJoint2D>();
     private LineRenderer lineRenderer;
     private bool isConnected = false;
-    private bool isTouchingWall = false;
+    private int wallContactCount = 0;
+    bool isTouchingWall => wallContactCount > 0;
 
     private void Awake()
     {
@@ -32,7 +33,7 @@ public class TetherManager : MonoBehaviour
     {
         CreateChain();
     }
-
+    
     private void FixedUpdate()
     {
 
@@ -151,6 +152,7 @@ public class TetherManager : MonoBehaviour
         }
         segments.Clear();
         joints.Clear();
+        wallContactCount = 0;
     }
 
     public void Reconnect()
@@ -161,8 +163,8 @@ public class TetherManager : MonoBehaviour
     {
         return isConnected;
     }
-    public void SetWallContact(bool contact)
-    {
-        isTouchingWall = contact;
-    }
+    public void AddWallContact() { wallContactCount++; }
+    public void RemoveWallContact() { wallContactCount = Mathf.Max(0, wallContactCount - 1); }
+
+
 }

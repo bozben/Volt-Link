@@ -55,6 +55,7 @@ public abstract class EnemyBase : MonoBehaviour
         else
         {
             currentBurnTime -= Time.deltaTime * 0.2f;
+		if(currentBurnTime <= 0){ currentBurnTime = 0; }
         }
     }
 

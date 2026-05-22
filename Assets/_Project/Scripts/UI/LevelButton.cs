@@ -11,7 +11,7 @@ public class LevelButton : MonoBehaviour
 
     private void Start()
     {
-        if (buttonText.text !=null) buttonText.text = $"Level {levelIndex}";
+        if (buttonText !=null) buttonText.text = $"Level {levelIndex}";
         int unlockedLevel = PlayerPrefs.GetInt("UnlockedLevel", 1);
         if (levelIndex > unlockedLevel)
         {

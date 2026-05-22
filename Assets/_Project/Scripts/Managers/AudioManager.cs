@@ -8,7 +8,7 @@ public class AudioManager : MonoBehaviour
 
     private void Start()
     {
-        if(Instance = null)
+        if(Instance == null)
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);

@@ -13,7 +13,7 @@ public class TetherSegment : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Wall"))
         {
-            manager.SetWallContact(true);
+            manager.AddWallContact();
         }
 
         EnemyBase enemy = collision.gameObject.GetComponent<EnemyBase>();
@@ -27,7 +27,7 @@ public class TetherSegment : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Wall"))
         {
-            manager.SetWallContact(false);
+            manager.RemoveWallContact();
         }
 
         EnemyBase enemy = collision.gameObject.GetComponent<EnemyBase>();

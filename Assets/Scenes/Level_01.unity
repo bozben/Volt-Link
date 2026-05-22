@@ -1626,11 +1626,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   forwardForce: 40
-  brakeForce: 20
-  steerTorque: 5
-  linearDamping: 2
-  angularDamping: 5
-  playerMass: 2
+  brakeForce: 8
+  steerTorque: 10
+  linearDamping: 1
+  angularDamping: 6
+  playerMass: 1
 --- !u!114 &879600238
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2084,7 +2084,7 @@ MonoBehaviour:
   combatRange: 7
   panicThreshold: 4
   calmThreshold: 5.5
-  tiredDuration: 4
+  tiredDuration: 8
   avoidanceForce: 10
   detectionDistance: 1.5
   sideRayAngle: 30
@@ -3515,8 +3515,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb3658185719dde4c802e288b09430a4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CoreController
-  coreMass: 1
-  linearDamping: 1
+  coreMass: 4
+  linearDamping: 0.8
 --- !u!50 &1602023986
 Rigidbody2D:
   serializedVersion: 5
