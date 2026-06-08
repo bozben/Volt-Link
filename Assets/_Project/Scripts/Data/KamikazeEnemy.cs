@@ -5,6 +5,9 @@ public class KamikazeEnemy : EnemyBase
     [Header("Kamikaze Settings")]
     [SerializeField] private float acceleration = 5f;
     [SerializeField] private float explosionDamage = 20f;
+    [SerializeField] private AudioClip sirenClip;
+    [SerializeField] private AudioClip explosionClip;
+    private AudioSource sirenSource;
 
     [Header("Navigation Settings")]
     [SerializeField] private float avoidanceForce = 10f;
@@ -19,6 +22,13 @@ public class KamikazeEnemy : EnemyBase
 
         rb.mass = 1f;
         rb.linearDamping = 1f;
+
+        sirenSource = gameObject.AddComponent<AudioSource>();
+        sirenSource.outputAudioMixerGroup = AudioManager.Instance.GetAmbienceGroup(); ;
+        sirenSource.clip = sirenClip;
+        sirenSource.loop = true;
+        sirenSource.spatialBlend = 1.0f;
+        sirenSource.Play();
     }
 
     private void FixedUpdate()
@@ -26,6 +36,18 @@ public class KamikazeEnemy : EnemyBase
         if (core == null) return;
         Patrol();
 
+        
+    }
+    protected override void PerformDeathVisuals()
+    {
+        base.PerformDeathVisuals();
+        StopSiren();
+    }
+    private void RotateTowardsCore()
+    {
+        Vector2 direction = ((Vector2)core.transform.position - rb.position).normalized;
+        float angle = Mathf.Atan2(direction.x, direction.y) * Mathf.Rad2Deg - 90f;
+        rb.MoveRotation(angle);
     }
 
     private void Patrol()
@@ -37,9 +59,12 @@ public class KamikazeEnemy : EnemyBase
             Vector2 chaseForce = CalculateChaseForce();
             Vector2 avoidForce = CalculateAvoidanceForce();
             rb.AddForce(chaseForce + avoidForce);
+            RotateTowardsCore();
+            UpdateSirenVolume(distToCore);
         }
         else
         {
+            StopSiren();
             float distToHome = Vector2.Distance(rb.position, initialPosition);
 
             if (distToHome > 0.2f)
@@ -89,6 +114,21 @@ public class KamikazeEnemy : EnemyBase
 
         return totalAvoidForce;
     }
+    private void UpdateSirenVolume(float distance)
+    {
+        float volume = 1f - (distance / alertRange);
+        sirenSource.volume = Mathf.Clamp01(volume);
+
+        if (!sirenSource.isPlaying) sirenSource.Play();
+    }
+
+    private void StopSiren()
+    {
+        if (sirenSource.isPlaying)
+        {
+            sirenSource.Stop();
+        }
+    }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
@@ -106,7 +146,8 @@ public class KamikazeEnemy : EnemyBase
         {
             coreHealth.TakeDamage(explosionDamage);
         }
-
-        Destroy(gameObject);
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlaySFX(explosionClip);
+        Die();
     }
 }

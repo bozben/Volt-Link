@@ -6,6 +6,7 @@ public class CoreHealth : MonoBehaviour
     [Header("Health Settings")]
     [SerializeField] private float maxHealth = 100f;
     [SerializeField] private float currentHealth;
+    [SerializeField] private AudioClip bulletImpactClip;
 
     public UnityEvent<float> OnHealthChanged;
     public UnityEvent OnCoreDestroyed;
@@ -24,7 +25,8 @@ public class CoreHealth : MonoBehaviour
     {
         currentHealth -= amount;
         Debug.Log("Core took " + amount + " damage. Current health: " + currentHealth);
-
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlaySFX(bulletImpactClip);
         currentHealth = Mathf.Max(currentHealth, 0);
         UpdateHealthUI();
         if (currentHealth <= 0)

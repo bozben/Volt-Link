@@ -8,14 +8,27 @@ public class TetherManager : MonoBehaviour
     [Header("References")]
     [SerializeField] private Rigidbody2D playerRb;
     [SerializeField] private Rigidbody2D coreRb;
+    [SerializeField] private AudioClip ropeSnapClip;
+
+    [Header("Visual Offsets")]
+    [SerializeField] private Vector3 playerOffset = new Vector3(0, -0.5f, 0);
+    [SerializeField] private Vector3 coreOffset = new Vector3(0, 0.5f, 0);
+    [SerializeField] private float ropeWidth = 0.2f;
 
     [Header("Chain Settings")]
-    [SerializeField] private int segmentCount = 8;        // Number of links in the chain
-    [SerializeField] private float targetRopeLength = 6f; 
-    [SerializeField] private float segmentMass = 0.1f;     
-    [SerializeField] private float segmentDamping = 2f;    
-    [SerializeField] private float maxTension = 1500f;     // Force threshold for snapping
-    [SerializeField] private float wallTensionMultiplier = 0.5f; // Lower the value easier to snap
+    [SerializeField] private int segmentCount = 8;
+    [SerializeField] private float targetRopeLength = 6f;
+    [SerializeField] private float segmentMass = 0.1f;
+    [SerializeField] private float segmentDamping = 2f;
+    [SerializeField] private float maxTension = 1500f;
+    [SerializeField] private float wallTensionMultiplier = 0.5f;
+
+    [Header("Tether Visuals")]
+    [SerializeField] private float flowSpeed = 0.5f;
+    private float offset = 0f;
+    private Material lineMaterial;
+
+
 
     private List<Rigidbody2D> segments = new List<Rigidbody2D>();
     private List<DistanceJoint2D> joints = new List<DistanceJoint2D>();
@@ -27,13 +40,16 @@ public class TetherManager : MonoBehaviour
     private void Awake()
     {
         lineRenderer = GetComponent<LineRenderer>();
-        
+        lineMaterial = new Material(lineRenderer.sharedMaterial);
+        lineRenderer.material = lineMaterial;
+        lineRenderer.startWidth = ropeWidth;
+        lineRenderer.endWidth = ropeWidth;
     }
     private void Start()
     {
         CreateChain();
     }
-    
+
     private void FixedUpdate()
     {
 
@@ -63,28 +79,39 @@ public class TetherManager : MonoBehaviour
             lineRenderer.positionCount = 0;
             return;
         }
-
+        Vector3 startPos = playerRb.transform.TransformPoint(playerOffset);
+        Vector3 endPos = coreRb.transform.TransformPoint(coreOffset);
         // Update LineRenderer to follow the chain segments
         lineRenderer.positionCount = segments.Count + 2;
-        lineRenderer.SetPosition(0, playerRb.position);
+        lineRenderer.SetPosition(0, startPos);
 
         for (int i = 0; i < segments.Count; i++)
         {
             lineRenderer.SetPosition(i + 1, segments[i].position);
         }
 
-        lineRenderer.SetPosition(segments.Count + 1, coreRb.position);
+        lineRenderer.SetPosition(segments.Count + 1, endPos);
     }
+    private void Update()
+    {
+        if (!isConnected) return;
 
+        offset += Time.deltaTime * flowSpeed;
+        if (offset > 1f) offset -= 1f;
+
+        lineMaterial.SetTextureOffset("_MainTex", new Vector2(0, offset));
+    }
 
     private void CreateChain()
     {
         DestroyChain();
+        Vector2 startPoint = playerRb.transform.TransformPoint(playerOffset);
+        Vector2 endPoint = coreRb.transform.TransformPoint(coreOffset);
 
         float segmentLength = targetRopeLength / segmentCount;
-        Vector2 direction = (coreRb.position - playerRb.position).normalized;
+        Vector2 direction = (endPoint - startPoint).normalized;
 
-        float currentActualDistance = Vector2.Distance(playerRb.position, coreRb.position);
+        float currentActualDistance = Vector2.Distance(startPoint, endPoint);
         float spawnSpacing = currentActualDistance / segmentCount;
 
         Rigidbody2D previousBody = playerRb;
@@ -112,7 +139,7 @@ public class TetherManager : MonoBehaviour
             CircleCollider2D circleCollider = segmentObject.AddComponent<CircleCollider2D>();
             circleCollider.radius = .1f;
 
-            
+
 
             // connection
             DistanceJoint2D joint = segmentObject.AddComponent<DistanceJoint2D>();
@@ -129,6 +156,7 @@ public class TetherManager : MonoBehaviour
         // add final segment
         DistanceJoint2D finalJoint = segments[segments.Count - 1].gameObject.AddComponent<DistanceJoint2D>();
         finalJoint.connectedBody = coreRb;
+        finalJoint.connectedAnchor = coreOffset;
         finalJoint.distance = segmentLength;
         finalJoint.autoConfigureDistance = false;
         joints.Add(finalJoint);
@@ -143,6 +171,8 @@ public class TetherManager : MonoBehaviour
 
         if (GameManager.Instance != null)
             GameManager.Instance.StartRecovery();
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlaySFX(ropeSnapClip);
     }
     private void DestroyChain()
     {

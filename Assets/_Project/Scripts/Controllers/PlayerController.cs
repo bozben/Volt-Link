@@ -9,11 +9,18 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float forwardForce = 20f;
     [SerializeField] private float brakeForce = 10f;
     [SerializeField] private float steerTorque = 5f;
+    [SerializeField] private float maxDetachedSpeed = 15f;
 
     [Header("Physics Tuning")]
     [SerializeField] private float linearDamping = 2f;
     [SerializeField] private float angularDamping = 2f; 
     [SerializeField] private float playerMass = 1f;
+
+    [SerializeField] private AudioClip thrusterClip;
+
+    private AudioSource thrusterSource;
+    private Animator anim; 
+    private TetherManager tetherManager;
 
     private Rigidbody2D rb;
     private Vector2 moveInput;
@@ -21,18 +28,44 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
+        tetherManager = FindFirstObjectByType<TetherManager>();
         SetupPhysics();
+
+        thrusterSource = gameObject.AddComponent<AudioSource>();
+        thrusterSource.outputAudioMixerGroup = AudioManager.Instance.GetAmbienceGroup();
+        thrusterSource.clip = thrusterClip;
+        thrusterSource.loop = true;
+        thrusterSource.playOnAwake = false;
+        thrusterSource.spatialBlend = 0;
+    }
+    private void Update()
+    {
+        if (Time.timeScale == 0 && thrusterSource != null && thrusterSource.isPlaying)
+        {
+            thrusterSource.Stop();
+        }
     }
     private void FixedUpdate()
     {
         HandleMovement();
         HandleSteering();
+        ClampDetachedSpeed();
+
+    }
+    private void ClampDetachedSpeed()
+    {
+        if (tetherManager != null && !tetherManager.IsConnected())
+        {
+            if (rb.linearVelocity.magnitude > maxDetachedSpeed)
+                rb.linearVelocity = rb.linearVelocity.normalized * maxDetachedSpeed;
+        }
     }
     private void SetupPhysics()
     {
         rb.mass = playerMass;
         rb.linearDamping = linearDamping;
-        rb.angularDamping = angularDamping; // Crucial to prevent infinite spinning
+        rb.angularDamping = angularDamping; 
         rb.gravityScale = 0f;
         rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
 
@@ -53,6 +86,16 @@ public class PlayerController : MonoBehaviour
         {
             rb.AddForce(-transform.up * Mathf.Abs(moveInput.y) * brakeForce);
         }
+        if (moveInput.sqrMagnitude > 0.01f)
+        {
+            if (!thrusterSource.isPlaying) thrusterSource.Play();
+            if (anim != null) anim.SetBool("isMoving", true);
+        }
+        else
+        {
+            if (thrusterSource.isPlaying) thrusterSource.Stop();
+            if (anim != null) anim.SetBool("isMoving", false);
+        }
     }
     private void HandleSteering()
     {
@@ -66,7 +109,6 @@ public class PlayerController : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Core"))
         {
-            TetherManager tetherManager = FindFirstObjectByType<TetherManager>();
             if(tetherManager!=null && !tetherManager.IsConnected())
             {
                 tetherManager.Reconnect();

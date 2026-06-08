@@ -6,6 +6,7 @@ public class BaseController : MonoBehaviour
     [Header("Base Settings")]
     [SerializeField] private Color closedColor = Color.red;
     [SerializeField] private Color openColor = Color.green;
+    [SerializeField] private AudioClip baseOpenClip;
 
     private bool isOpen = false;
     private SpriteRenderer sr;
@@ -32,6 +33,11 @@ public class BaseController : MonoBehaviour
         if (baseCollider != null)
         {
             baseCollider.isTrigger = true;
+        }
+
+        if (AudioManager.Instance != null && baseOpenClip != null)
+        {
+            AudioManager.Instance.PlaySFX(baseOpenClip);
         }
 
         Debug.Log("The Base is now OPEN!");

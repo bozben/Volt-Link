@@ -14,6 +14,9 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject victoryPanel;
     [SerializeField] private GameObject gameOverPanel;
 
+    [SerializeField] private AudioClip victoryClip;
+    [SerializeField] private AudioClip defeatClip;
+
     private float currentTimer;
     private bool isRecovering = false;
 
@@ -30,12 +33,14 @@ public class GameManager : MonoBehaviour
 		Destroy(gameObject);
     }
 
+        Time.timeScale = 1f;
+
         hud = FindFirstObjectByType<HUDManager>();
 
         if (victoryPanel != null) victoryPanel.SetActive(false);
         if (gameOverPanel != null) gameOverPanel.SetActive(false);
 
-        
+
     }
     private void Update()
     {
@@ -72,6 +77,7 @@ public class GameManager : MonoBehaviour
         Debug.Log("Game State: Victory");
         Time.timeScale = 0;
         if (victoryPanel != null) victoryPanel.SetActive(true);
+        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(victoryClip);
     }
 
     public void TriggerGameOver()
@@ -79,6 +85,7 @@ public class GameManager : MonoBehaviour
         Debug.Log("Game State: Game Over");
         Time.timeScale = 0;
         if (gameOverPanel != null) gameOverPanel.SetActive(true);
+        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(defeatClip);
     }
 
     public void RestartGame()
@@ -103,7 +110,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("All levels done");
+            ReturnToMainMenu();
         }
     }
 }

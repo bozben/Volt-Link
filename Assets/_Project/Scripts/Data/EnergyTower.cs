@@ -1,18 +1,23 @@
 using System;
+using System.Runtime.InteropServices;
 using UnityEngine;
+using static Unity.VisualScripting.Member;
 
 public class EnergyTower : MonoBehaviour
 {
     [Header("Charging Settings")]
     [SerializeField] private float chargeTimeRequired = 3f;
     [SerializeField] private Color idleColor = Color.red;
-    [SerializeField] private Color chargedColor = Color.cyan; 
+    [SerializeField] private Color chargedColor = Color.cyan;
+    [SerializeField] private AudioClip chargeLoopClip;
+    [SerializeField] private AudioClip activateClip;
     [Header("Zone Settings")]
     [SerializeField] private float energyRadius = 1.2f;
 
     private float currentChargeTime = 0f;
     private bool isCharged = false;
     private SpriteRenderer sr;
+    private AudioSource chargeSource;
 
     private int ropeSegmentsTouching = 0;
 
@@ -22,6 +27,12 @@ public class EnergyTower : MonoBehaviour
         if (sr != null) sr.color = idleColor;
 
         SetupColliders();
+        chargeSource = gameObject.AddComponent<AudioSource>();
+        chargeSource.outputAudioMixerGroup = AudioManager.Instance.GetAmbienceLoudGroup();
+        chargeSource.clip = chargeLoopClip;
+        chargeSource.loop = true;
+        chargeSource.spatialBlend = 1.0f;
+
     }
 
     private void SetupColliders()
@@ -48,6 +59,7 @@ public class EnergyTower : MonoBehaviour
 
         if (ropeSegmentsTouching > 0)
         {
+            if (!chargeSource.isPlaying) chargeSource.Play();
             currentChargeTime += Time.deltaTime;
             float progress = currentChargeTime / chargeTimeRequired;
             sr.color = Color.Lerp(idleColor, chargedColor, progress);
@@ -56,6 +68,10 @@ public class EnergyTower : MonoBehaviour
             {
                 CompleteCharge();
             }
+        }
+        else
+        {
+            if (chargeSource.isPlaying) chargeSource.Stop();
         }
     }
 
@@ -66,9 +82,12 @@ public class EnergyTower : MonoBehaviour
     {
         isCharged = true;
         sr.color = chargedColor;
+        if (chargeSource.isPlaying) chargeSource.Stop();
+        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(activateClip);
         if (TowerManager.Instance != null)
         {
             TowerManager.Instance.TowerActivated(this);
+            
         }
     }
     public bool IsCharged() { return isCharged; }

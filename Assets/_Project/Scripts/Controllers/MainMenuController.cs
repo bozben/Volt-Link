@@ -8,6 +8,8 @@ public class MainMenuController : MonoBehaviour
     [Header("UI Panels")]
     [SerializeField] private GameObject levelSelectorPanel;
     [SerializeField] private GameObject optionsPanel;
+
+    [SerializeField] private AudioClip menuClickClip;
     private void Start()
     {
         CloseOption();
@@ -31,27 +33,37 @@ public class MainMenuController : MonoBehaviour
     public void PlayGame()
     {
         SceneManager.LoadScene("Level_01");
+        PlaySound();
     }
 
     public void OpenOptions()
     {
         //mainPanel.SetActive(false);
         optionsPanel.SetActive(true);
+        PlaySound();
     }
     public void CloseOption()
     {
         //mainPanel.SetActive(true);
         optionsPanel.SetActive(false);
+        PlaySound();
     }
 
     public void OpenLevelSelector()
     {
         //mainPanel.SetActive(false);
         levelSelectorPanel.SetActive(true);
+        PlaySound();
     }
     public void CloseLevelSelector()
     {
         //mainPanel.SetActive(true);
         levelSelectorPanel.SetActive(false);
+        PlaySound();
+    }
+
+    private void PlaySound()
+    {
+        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(menuClickClip);
     }
 }

@@ -13,8 +13,7 @@ MonoBehaviour:
   m_Name: Enemy_Orange
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
   tierName: 
-  tierColor: {r: 1, g: 0.5197496, b: 0, a: 1}
-  maxHealth: 100
+  tierColor: {r: 1, g: 1, b: 1, a: 1}
   movementSpeed: 2
   damageToCore: 10
   burnTimeRequired: 0.5

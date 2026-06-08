@@ -10,6 +10,7 @@ public class EnemyShooter : MonoBehaviour
     [SerializeField] private float fireRate = 1.5f;
     [SerializeField] private float attackRange = 8f;
     [SerializeField] private LayerMask blockageLayer;
+    [SerializeField] private AudioClip shotClip;
 
     private float nextFireTime;
 
@@ -52,6 +53,11 @@ public class EnemyShooter : MonoBehaviour
         Quaternion rotation = Quaternion.Euler(0, 0, angle);
 
         Instantiate(projectilePrefab, transform.position, rotation);
+
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySFX(shotClip);
+        }
 
         Debug.Log($"{gameObject.name} fired a projectile!");
     }
